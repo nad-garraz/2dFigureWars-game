@@ -12,7 +12,8 @@ class Entity
 
   bool m_active = true;
   size_t m_id = 0;
-  std::string m_tag = "default";
+  const std::string m_tag = "default";
+  
 
   //contructor and destructo
   Entity (const size_t id, const std::string& tag);

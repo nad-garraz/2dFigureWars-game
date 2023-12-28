@@ -4,6 +4,7 @@
 #include <map>
 #include <memory>
 #include <vector>
+#include <string>
 
 #include "Entity.h"
 
@@ -14,8 +15,13 @@ class EntityManager
 {
   EntityVec m_entities;
   EntityVec m_toAdd;
+  EntityVec m_entitiesToAdd;
   EntityVec m_entityMap;
   size_t m_totalEntities = 0;
+
+  bool m_alive;
+
+  std::string m_tag;
 
 public:
   EntityManager();
@@ -27,6 +33,9 @@ public:
   const EntityVec &getEntities();
 
   const EntityVec &getEntities(const std::string &tag);
+
+  void removeDeadEntities(EntityVec &vec);
+  void destroy();
 };
 
 #endif // !ENTITY_H

@@ -25,12 +25,10 @@ void EntityManager::update()
   }
 }
 
-
 const EntityVec &EntityManager::getEntities()
 {
   return m_entities;
 }
-
 
 void EntityManager::destroy()
 {
@@ -44,9 +42,16 @@ const std::string &tag()
 
 void EntityManager::removeDeadEntities(EntityVec &vec)
 {
-  // Todo: remoe all dead entities from the inpu
+  // Todo: remoe all dead entities from the input
   // vector this is called by the update() function
-}
+  for (auto e : vec)
+  {
+    if (!e->isActive())
+    {
+      // remove from vec using std::remove_if
+    }
+  }
+};
 
 std::shared_ptr<Entity> EntityManager::addEntity(const std::string &tag)
 {
@@ -59,5 +64,6 @@ std::shared_ptr<Entity> EntityManager::addEntity(const std::string &tag)
 const EntityVec &EntityManager::getEntities(const std::string &tag)
 {
   // Todo: this is incorrect, return the correct vector from the map
-  return m_entities;
+  // return m_entities;
+  return m_entityMap[tag];
 }

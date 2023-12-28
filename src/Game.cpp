@@ -132,8 +132,15 @@ void Game::spawnEnemy()
 
 void Game::sCollision()
 {
-  // TODO: implement all proper collisions etween entities
+  // TODO: implement all proper collisions between entities
   // be sure to use the coliision radius, NOT the shaperadius
+  for (auto b : m_entities.getEntities("bullet"))
+  {
+    for (auto e: m_entities.getEntities("enemy"))
+    {
+
+    }
+  }
 }
 
 void Game::sEnemySpawner()
@@ -210,14 +217,27 @@ void Game::sUserInput()
     }
     if (event.type == sf::Event::MouseButtonPressed)
     {
+      if (event.mouseButton.button == sf::Mouse::Left)
+      {
+        std::cout << "Left Mouse Button Clicked at (" << event.mouseButton.x << "," << event.mouseButton.y << ")\n";
+        // call spawnBullet here
+        spawnBullet(m_player, Vec2(event.mouseButton.x, event.mouseButton.y));
+      }
+
+      if (event.mouseButton.button == sf::Mouse::Right)
+      {
+        std::cout << "Right Mouse Button Clicked at (" << event.mouseButton.x << "," << event.mouseButton.y << ")\n";
+        // call spawnSpecialWeapon here
+      }
     }
   }
 }
 
 void Game::sMovement()
 {
-  //TODO: implement all entity movement in this function
-  //you should read the m_player->cInput component to determine if the player is moving
+  // TODO: implement all entity movement in this function
+  // you should read the m_player->cInput component to determine if the player
+  // is moving
   m_player->cTransform->velocity = {0, 0};
   // implement player movement
   if (m_player->cInput->up)
@@ -225,7 +245,18 @@ void Game::sMovement()
     m_player->cTransform->velocity.y = -5;
   }
 
-  //Sample movement speed update
+  // Sample movement speed update
   m_player->cTransform->pos.x += m_player->cTransform->velocity.x;
   m_player->cTransform->pos.y += m_player->cTransform->velocity.y;
+}
+
+void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2 &target)
+{
+  // TODO: inplement the spawning of a bullet which travels toward target
+  //- bullet speed is given as a scalar speed
+  //- you must set the velocity by using formula in notes
+
+  auto bullet        = m_entities.addEntity("bullet");
+  bullet->cTransform = std::make_shared<CTransform>(target, Vec2(0, 0), 0);
+  bullet->cShape     = std::make_shared<CShape>(10, 8, sf::Color(255, 255, 255), sf::Color(255, 0, 0), 2);
 }
