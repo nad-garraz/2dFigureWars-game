@@ -43,6 +43,7 @@ class Game
   void init(const std::string &config); // initialize the GameState with a config file path
   void setPaused(bool paused);          // pause the game
 
+
   void sMovement();     // System: Entity position / movement update
   void sUserInput();    // System: User input
   void sLifespan();     // System: Lifespan
@@ -56,8 +57,14 @@ class Game
   void spawnBullet(std::shared_ptr<Entity> entity, const Vec2 &mousePos);
   void spawnSpecialWeapon(std::shared_ptr<Entity> entity);
 
-  public:
-  Game(const std::string & config); // constructor, takes in game config
+public:
+  Game(const std::string &config); // constructor, takes in game config
+  PlayerConfig getPlayerConfig()
+  {
+    return m_playerConfig;
+  };
+                                   //
+  void run();
 };
 
 #endif // !GAME_H

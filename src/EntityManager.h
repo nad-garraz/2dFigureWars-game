@@ -1,9 +1,11 @@
-#ifndef ENTITY_H
-#define ENTITY_H
+#ifndef ENTITYMANAGER_H
+#define ENTITYMANAGER_H
 
 #include <map>
 #include <memory>
 #include <vector>
+
+#include "Entity.h"
 
 typedef std::vector<std::shared_ptr<Entity>> EntityVec;
 typedef std::map<std::string, EntityVec> EntityMap;
@@ -16,7 +18,7 @@ class EntityManager
   size_t m_totalEntities = 0;
 
 public:
-  EntityManager(){};
+  EntityManager();
 
   void update();
 

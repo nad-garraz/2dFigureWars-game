@@ -1,38 +1,63 @@
 #include "EntityManager.h"
 
-  EntityManager::EntityManager(){};
+EntityManager::EntityManager(){};
 
-  void EntityManager::destroy()
+void EntityManager::update()
+{
+  // TODO: add entities from m_entitiesToAdd the proper location(s)
+  //  - add them to the vector of all entities
+  //  - add them to the vector inside the map, with the tag as a key
+  for (auto e : m_entitiesToAdd)
   {
-    m_alive = false;
-  };
-
-  const std::string &tag()
-  {
-    return m_tag;
-  };
-
-  void EntityManager::removeDeadEntities(EntityVec &vec)
-  {
-    // Todo: remoe all dead entities from the inpu
-    // vector this is called by the update() function
+    m_entities.push_back(e);
   }
 
-  std::shared_ptr<Entity> EntityManager::addEntity(const std::string &tag)
-  {
-    auto entity = std::shared_ptr<Entity>(new Entity(m_totalEntities++, tag));
+  m_entitiesToAdd.clear();
+  //  remove dead entities from the vector of all entities
+  removeDeadEntities(m_entities);
 
-    m_entitiesToAdd.push_back(entity);
-    return entity;
-  }
+  // remove dead entities from each vector in the entity map
+  // c++17 way or iterating through [key,value] pairs in a map
 
-  const EntityVec &EntityManager::getEntities()
+  for (auto &[tag, entityVec] : m_entityMap)
   {
-    return m_entities;
+    removeDeadEntities(entityVec);
   }
+}
 
-  const EntityVec &EntityManager::getEntities(const std::string &tag)
-  {
-    // Todo: this is incorrect, return the correct vector from the map
-    return m_entities;
-  }
+
+const EntityVec &EntityManager::getEntities()
+{
+  return m_entities;
+}
+
+
+void EntityManager::destroy()
+{
+  m_alive = false;
+};
+
+const std::string &tag()
+{
+  return m_tag;
+};
+
+void EntityManager::removeDeadEntities(EntityVec &vec)
+{
+  // Todo: remoe all dead entities from the inpu
+  // vector this is called by the update() function
+}
+
+std::shared_ptr<Entity> EntityManager::addEntity(const std::string &tag)
+{
+  auto entity = std::shared_ptr<Entity>(new Entity(m_totalEntities++, tag));
+
+  m_entitiesToAdd.push_back(entity);
+  return entity;
+}
+
+const EntityVec &EntityManager::getEntities(const std::string &tag)
+{
+  // Todo: this is incorrect, return the correct vector from the map
+  return m_entities;
+}
