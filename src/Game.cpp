@@ -148,7 +148,7 @@ void Game::sEnemySpawner()
   // Todo: code which implements enemy spawing should go here
   //
   //(use m_currentFrame - m_lastEnemySpawnTieme) to determine
-  // how long it has been since the lat enemy spawned
+  // how long it has been since the last enemy spawned
   spawnEnemy();
 }
 

@@ -35,16 +35,11 @@ void EntityManager::destroy()
   m_alive = false;
 };
 
-const std::string &tag()
-{
-  return m_tag;
-};
-
 void EntityManager::removeDeadEntities(EntityVec &vec)
 {
   // Todo: remoe all dead entities from the input
   // vector this is called by the update() function
-  for (auto e : vec)
+  for (auto & e : vec)
   {
     if (!e->isActive())
     {

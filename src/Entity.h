@@ -11,8 +11,8 @@ class Entity
   friend class EntityManager;
 
   bool m_active = true;
-  size_t m_id = 0;
-  const std::string m_tag = "default";
+  const size_t m_id = 0;
+  std::string m_tag = "default";
   
 
   //contructor and destructo
@@ -29,8 +29,9 @@ public:
   //private member access functions
 
   bool isActive() const;
-  const std::string & tag() const;
-  const size_t id() const;
+  const std::string & tag();
+  const size_t &id() const;
+
   void destroy();
 };
 

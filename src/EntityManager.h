@@ -14,14 +14,11 @@ typedef std::map<std::string, EntityVec> EntityMap;
 class EntityManager
 {
   EntityVec m_entities;
-  EntityVec m_toAdd;
   EntityVec m_entitiesToAdd;
-  EntityVec m_entityMap;
+  EntityMap m_entityMap;
   size_t m_totalEntities = 0;
 
   bool m_alive;
-
-  std::string m_tag;
 
 public:
   EntityManager();
