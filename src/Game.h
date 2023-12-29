@@ -63,7 +63,7 @@ public:
   {
     return m_playerConfig;
   };
-                                   //
+
   void run();
 };
 

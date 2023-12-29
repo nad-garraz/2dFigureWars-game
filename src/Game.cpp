@@ -1,8 +1,10 @@
 #include "Game.h"
 
-#include <Components.h>
+#include "Components.h"
 // #include <fstream>
 // #include <iostream>
+#include <SFML/Graphics/Color.hpp>
+#include <SFML/Graphics/Shape.hpp>
 #include <SFML/Window/Keyboard.hpp>
 #include <memory>
 
@@ -92,7 +94,7 @@ void Game::spawnPlayer()
   // We create every entity by calling EntityManager.addEntity(tag)
   //  This returns a std::shared_ptr<Entity>, so we use 'auto' to save typing
 
-  auto entity = m_entities.addEntity("player");
+  auto entity = m_entities.addEntity("Player");
 
   // Give this entity a Transform so it spawns at (200,200) with velocity (1,1)
   // and angle 0

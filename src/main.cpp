@@ -1,11 +1,9 @@
-#include "Game.h"
 #include <SFML/Graphics.hpp>
-#include <string>
+
+#include "Game.h"
 
 int main()
 {
   Game g("../config_game");
   g.run();
-
-  return 0;
 }
