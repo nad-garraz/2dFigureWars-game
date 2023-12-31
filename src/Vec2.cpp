@@ -77,15 +77,16 @@ float Vec2::length() const
   return sqrtf(x * x + y * y);
 };
 
-void Vec2::normalize()
+Vec2 Vec2::normalize()
 {
   float a = 1.0 / this->length();
   this->x *= a;
   this->y *= a;
+  return Vec2(this->x, this->y);
 };
 
 
 void Vec2::print() const
 {
-  printf("(%f, %f)\n",this->x, this->y);
+  printf("(%f, %f)",this->x, this->y);
 }

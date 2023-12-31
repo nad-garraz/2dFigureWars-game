@@ -7,16 +7,17 @@
 class CTransform
 {
 public:
-  Vec2 pos      = {0.0, 0.0};
-  Vec2 velocity = {0.0, 0.0};
+  Vec2 pos      = {0, 0};
+  Vec2 velocity = {0, 0};
   float angle   = 0;
 
   CTransform(const Vec2 &p, const Vec2 &v, float a)
-      : pos(p),
-        velocity(v),
-        angle(a)
+      : pos(p)
+      , velocity(v)
+      , angle(a)
   {
   }
+  const Vec2 getPositon() { return pos; }
 };
 
 class CShape
@@ -60,8 +61,8 @@ public:
   int remaining = 0; // amount of lifespan remaining on the entity
   int total     = 0; // the total initial amount of lifespan
   CLifespan(int total)
-      : remaining(total),
-        total(total)
+      : remaining(total)
+      , total(total)
   {
   }
 };
