@@ -8,7 +8,7 @@ Entity::Entity(const size_t id, const std::string &tag)
 
 bool Entity::isActive() const
 {
-  return m_active;
+  return m_alive;
 };
 
 const std::string &Entity::tag() const
@@ -21,4 +21,7 @@ const size_t &Entity::id() const
   return m_id;
 };
 
-void destroy();
+void Entity::destroy()
+{
+  m_alive = false;
+};

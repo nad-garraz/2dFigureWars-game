@@ -7,9 +7,9 @@
 class CTransform
 {
 public:
-  Vec2 pos      = {0, 0};
-  Vec2 velocity = {0, 0};
-  float angle   = 0;
+  Vec2  pos      = {0.0, 0.0};
+  Vec2  velocity = {0.0, 0.0};
+  float angle    = 0;
 
   CTransform(const Vec2 &p, const Vec2 &v, float a)
       : pos(p)
@@ -17,7 +17,6 @@ public:
       , angle(a)
   {
   }
-  const Vec2 getPositon() { return pos; }
 };
 
 class CShape

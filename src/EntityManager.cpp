@@ -18,6 +18,7 @@ void EntityManager::update()
 
   //  Remove dead entities from the vector of all entities
   removeDeadEntities(m_entities);
+
   // remove dead entities from each vector in the entity map
   for (auto &[tag, entityVec] : m_entityMap)
   {
@@ -25,23 +26,11 @@ void EntityManager::update()
   }
 }
 
-const EntityVec &EntityManager::getEntities()
-{
-  return m_entities;
-}
-
-void EntityManager::destroy()
-{
-  m_alive = false;
-};
+const EntityVec &EntityManager::getEntities() { return m_entities; }
 
 void EntityManager::removeDeadEntities(EntityVec &vec)
 {
-  // Todo: remove all dead entities from the input vector this is called by the
-  // update() function
-
-  // if the value e->isActive() is false, then erase from vec.
-  auto newEnd = remove_if(vec.begin(), vec.end(), [](std::shared_ptr<Entity> &e) { return !e->isActive(); });
+  auto newEnd = remove_if(vec.begin(), vec.end(), [](std::shared_ptr<Entity> e) { return !e->isActive(); });
   vec.erase(newEnd, vec.end());
 };
 
@@ -54,9 +43,4 @@ std::shared_ptr<Entity> EntityManager::addEntity(const std::string &tag)
   return entity;
 }
 
-const EntityVec &EntityManager::getEntities(const std::string &tag)
-{
-  // Todo: this is incorrect, return the correct vector from the map
-  // return m_entities;
-  return m_entityMap[tag];
-}
+const EntityVec &EntityManager::getEntities(const std::string &tag) { return m_entityMap[tag]; }

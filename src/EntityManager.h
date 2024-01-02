@@ -3,36 +3,33 @@
 
 #include <map>
 #include <memory>
-#include <vector>
 #include <string>
+#include <vector>
 
 #include "Entity.h"
 
 typedef std::vector<std::shared_ptr<Entity>> EntityVec;
-typedef std::map<std::string, EntityVec> EntityMap;
+typedef std::map<std::string, EntityVec>     EntityMap;
 
 class EntityManager
 {
   EntityVec m_entities;
   EntityVec m_entitiesToAdd;
   EntityMap m_entityMap;
-  size_t m_totalEntities = 0;
-
-  bool m_alive;
+  size_t    m_totalEntities = 0;
 
 public:
   EntityManager();
 
   void update();
+  void removeDeadEntities(EntityVec &vec);
 
   std::shared_ptr<Entity> addEntity(const std::string &tag);
 
   const EntityVec &getEntities();
-
   const EntityVec &getEntities(const std::string &tag);
 
-  void removeDeadEntities(EntityVec &vec);
-  void destroy();
+  const std::map<std::string, EntityVec> &getEntityMap();
 };
 
 #endif // !ENTITY_H
