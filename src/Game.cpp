@@ -1,17 +1,5 @@
 #include "Game.h"
 
-#include "Components.h"
-#include <SFML/Graphics/Color.hpp>
-#include <SFML/Graphics/Shape.hpp>
-#include <SFML/Window/Keyboard.hpp>
-#include <SFML/Window/WindowStyle.hpp>
-#include <cstdlib>
-#include <ctime>
-#include <fstream>
-#include <imconfig.h>
-#include <iostream>
-#include <memory>
-
 Game::Game(const std::string &config) { init(config); }
 
 void Game::init(const std::string &path)
@@ -42,9 +30,13 @@ void Game::init(const std::string &path)
                   m_windowConfig.fullscreen ? sf::Style::Fullscreen : sf::Style::None);
   m_window.setFramerateLimit(m_windowConfig.rate);
 
+  ImGui::SFML::Init(m_window);
+
   // Spawn the first player
   spawnPlayer();
+  // Spawn the  first enemy
   spawnEnemy();
+
   // seed random generator
   std::srand(time(NULL));
 }
@@ -59,6 +51,9 @@ void Game::run()
   {
     m_entities.update();
 
+    // required update call to imgui
+    ImGui::SFML::Update(m_window, m_deltaClock.restart());
+
     sUserInput();
     if (!m_paused)
     {
@@ -68,6 +63,7 @@ void Game::run()
       sLifespan();
       m_currentFrame++;
     }
+    sGUI();
     sRender();
   }
 };
@@ -101,7 +97,7 @@ void Game::spawnEnemy()
   // variables the enemy must be spawned completely within the bounds of the
   // window
 
-  auto  enemy = m_entities.addEntity("enemy");
+  auto enemy = m_entities.addEntity("enemy");
 
   // Random start Positiion inside screen
   Vec2  w(m_windowConfig.width, m_windowConfig.height);
@@ -123,17 +119,17 @@ void Game::spawnEnemy()
   float V      = rand() % (int)deltaV + m_enemyConfig.VMIN;
 
   // Random FillColors
-  int   deltaColor    = 1 + 255 - 0; // 1 + MAX - MIN
-  float r             = rand() % deltaColor + 0;
-  float g             = rand() % deltaColor + 0;
-  float b             = rand() % deltaColor + 0;
+  int   deltaColor   = 1 + 255 - 0; // 1 + MAX - MIN
+  float r            = rand() % deltaColor + 0;
+  float g            = rand() % deltaColor + 0;
+  float b            = rand() % deltaColor + 0;
 
-  Vec2  startPosition = Vec2(ex, ey);
+  Vec2 startPosition = Vec2(ex, ey);
 
-  enemy->cTransform   = std::make_shared<CTransform>(startPosition, vel, 0.0f);
-  enemy->cShape       = std::make_shared<CShape>(m_enemyConfig.SR, V, sf::Color(r, g, b),
+  enemy->cTransform  = std::make_shared<CTransform>(startPosition, vel, 0.0f);
+  enemy->cShape      = std::make_shared<CShape>(m_enemyConfig.SR, V, sf::Color(r, g, b),
                                            sf::Color(m_enemyConfig.OR, m_enemyConfig.OG, m_enemyConfig.OB), m_enemyConfig.OT);
-  enemy->cCollision   = std::make_shared<CCollision>(m_enemyConfig.CR);
+  enemy->cCollision  = std::make_shared<CCollision>(m_enemyConfig.CR);
 };
 
 void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2 &target)
@@ -209,7 +205,7 @@ void Game::sCollision()
    */
   for (auto &enemy : m_entities.getEntities("enemy"))
   { // Collisions in the screen's border
-    int  enemyR = enemy->cCollision->radius;
+    int enemyR = enemy->cCollision->radius;
 
     Vec2 enemyP(enemy->cShape->circle.getPosition().x, enemy->cShape->circle.getPosition().y);
     // Hacky line to prevent those spawny collisions at (0,0)
@@ -221,7 +217,7 @@ void Game::sCollision()
     float enemyLeft   = enemyP.x - enemyR;
     float enemyRight  = enemyP.x + enemyR;
 
-    Vec2  vel(enemy->cTransform->velocity);
+    Vec2 vel(enemy->cTransform->velocity);
     if ((enemyBottom >= m_window.getSize().y && vel.y > 0) || (enemyTop <= 0 && vel.y < 0))
     {
       enemy->cTransform->velocity.y *= -1.0f;
@@ -240,15 +236,15 @@ void Game::sCollision()
   {
     float playerR = player->cCollision->radius;
 
-    Vec2  playerP(player->cShape->circle.getPosition().x, player->cShape->circle.getPosition().y);
+    Vec2 playerP(player->cShape->circle.getPosition().x, player->cShape->circle.getPosition().y);
 
-    int   playerTop    = playerP.y - playerR;
-    int   playerBottom = playerP.y + playerR;
-    int   playerLeft   = playerP.x - playerR;
-    int   playerRight  = playerP.x + playerR;
+    int playerTop    = playerP.y - playerR;
+    int playerBottom = playerP.y + playerR;
+    int playerLeft   = playerP.x - playerR;
+    int playerRight  = playerP.x + playerR;
 
     // Prevent Shape from going beyond screen limits
-    Vec2  vel(player->cTransform->velocity);
+    Vec2 vel(player->cTransform->velocity);
 
     if (playerBottom >= m_windowConfig.height && vel.y > 0) player->cTransform->pos.y = m_windowConfig.height - playerR;
 
@@ -313,6 +309,10 @@ void Game::sRender()
       m_window.draw(e->cShape->circle);
     }
   }
+  // draw the ui lsat
+  //
+  ImGui::SFML::Render(m_window);
+
   m_window.display();
 }
 
@@ -322,6 +322,7 @@ void Game::sUserInput()
   sf::Event event;
   while (m_window.pollEvent(event))
   {
+    ImGui::SFML::ProcessEvent(m_window, event);
     // this event is triggered when a key is pressed
     if (event.type == sf::Event::KeyPressed)
     {
@@ -373,17 +374,23 @@ void Game::sUserInput()
       }
     }
 
-    if (event.type == sf::Event::MouseButtonPressed)
+    if (!ImGui::GetIO().WantCaptureMouse) // Separates the ImGui window from the
+                                          // input of the game
     {
-      if (event.mouseButton.button == sf::Mouse::Left)
+      if (event.type == sf::Event::MouseButtonPressed)
       {
-        // call spawnBullet here
-        spawnBullet(m_player, Vec2(event.mouseButton.x, event.mouseButton.y));
-      }
+        if (event.mouseButton.button == sf::Mouse::Left)
+        {
+          if (!m_paused)
+          {
+            spawnBullet(m_player, Vec2(event.mouseButton.x, event.mouseButton.y));
+          }
+        }
 
-      if (event.mouseButton.button == sf::Mouse::Right)
-      {
-        // call spawnSpecialWeapon here
+        if (event.mouseButton.button == sf::Mouse::Right)
+        {
+          // call spawnSpecialWeapon here
+        }
       }
     }
   }
@@ -437,4 +444,21 @@ void Game::sLifespan()
 void spawnSpecialWeapon(std::shared_ptr<Entity> entity)
 {
   // TODO: implement your own special weapon
+}
+
+void Game::sGUI()
+{
+  static float f1 = m_player->cShape->circle.getRadius();
+  // static float f1 = m_player->cShape->circle.getRadius();
+  ImGui::Begin("Window title");
+  ImGui::Text("Window Text!");
+  ImGui::DragFloat("drag float", &f1);
+  m_player->cShape->circle.setRadius(f1);
+  ImGui::Checkbox("Checkbox", &m_paused);
+  if (ImGui::Button("Pause"))
+  {
+    m_paused = !m_paused;
+  }
+  ImGui::SameLine();
+  ImGui::End();
 }
