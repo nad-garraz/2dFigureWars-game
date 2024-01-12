@@ -182,6 +182,7 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> e)
     smallEnemy->cTransform = std::make_shared<CTransform>(origin, vel, 0.0f);
     smallEnemy->cShape     = std::make_shared<CShape>(radius, vertices, color, outlineColor, outlineTickness);
     smallEnemy->cLifespan  = std::make_shared<CLifespan>(m_enemyConfig.L);
+    smallEnemy->cCollision  = std::make_shared<CCollision>(radius);
   }
 }
 
@@ -216,6 +217,30 @@ void Game::sCollision()
     }
   }
 
+  for (auto bullet : m_entities.getEntities("bullet"))
+  {
+    int  bulletR = bullet->cCollision->radius;
+    Vec2 bulletP(bullet->cShape->circle.getPosition().x, bullet->cShape->circle.getPosition().y);
+
+    for (auto sEnemy : m_entities.getEntities("smallEnemy"))
+    {
+      int  enemyR = sEnemy->cCollision->radius;
+      Vec2 enemyP(sEnemy->cShape->circle.getPosition().x, sEnemy->cShape->circle.getPosition().y);
+      // Hacky line to prevent those spawny collisions at (0,0)
+      // that I don't understand
+      if (enemyP == Vec2(0, 0)) continue;
+
+      float distBE            = enemyP.dist(bulletP);
+      float collisionDistance = (bulletR + enemyR);
+
+      if (distBE <= collisionDistance)
+      {
+        bullet->destroy();
+        sEnemy->destroy();
+        m_player->cScore->score += 400 * sEnemy->cShape->circle.getPointCount();
+      }
+    }
+  }
   /*
    * Enemies and Walls
    */
@@ -299,8 +324,9 @@ void Game::sEnemySpawner()
   // if (m_currentFrame - m_lastEnemySpawnTime > 600)
   // if there are more than 5 entity enemies, then slow down spawn speed
   if (m_currentFrame % 60 == 0 && m_entities.getEntities("enemy").size() <= 5 && m_enemyConfig.SI > 60) m_enemyConfig.SI -= 5;
-  else if (m_currentFrame % 60 == 0 && m_entities.getEntities("enemy").size() > 5 && m_enemyConfig.SI < 600) m_enemyConfig.SI +=5;
-  std::cout << m_enemyConfig.SI << std::endl;
+  else if (m_currentFrame % 60 == 0 && m_entities.getEntities("enemy").size() > 5 && m_enemyConfig.SI < 600)
+    m_enemyConfig.SI += 5;
+  // std::cout << m_enemyConfig.SI << std::endl;
   if (m_currentFrame - m_lastEnemySpawnTime > m_enemyConfig.SI)
   {
     spawnEnemy();
