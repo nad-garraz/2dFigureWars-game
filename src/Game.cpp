@@ -61,6 +61,7 @@ void Game::run()
       sCollision();
       sEnemySpawner();
       sLifespan();
+      sScore();
       m_currentFrame++;
     }
     sGUI();
@@ -87,6 +88,9 @@ void Game::spawnPlayer()
   // Add an input component to the player so that we can use inputs
   playerEntity->cInput = std::make_shared<CInput>();
 
+  // Add the score to the player
+  playerEntity->cScore = std::make_shared<CScore>(0, m_fontConfig.path, m_fontConfig.size,
+                                                  sf::Color(m_fontConfig.red, m_fontConfig.green, m_fontConfig.blue));
   m_player             = playerEntity;
 }
 
@@ -149,26 +153,36 @@ void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2 &target)
 
 void Game::spawnSmallEnemies(std::shared_ptr<Entity> e)
 {
-  // Todo: spawn samll enemies at the location of the input enemy e
+  // Todo: spawn small enemies at the location of the input enemy e
 
   // when we create the smaller enemy, we have to read the values of the
   // original enemy
   //  - spawn a number of small enemies equal to the vertices of the original
   //  enemy
   //  - set each small enemy to the same color as the original, half the size
-  //  - small enemies are worth double points of the orifinal enemy
+  //  - small enemies are worth double points of the original enemy
+  static int vertices, radius;
+  sf::CircleShape circ(e->cShape->circle);
+  vertices = circ.getPointCount();
+  radius   = circ.getRadius() / 2;
+  static Vec2     origin, newOrigin;
+  const sf::Color color           = circ.getFillColor();
+  const sf::Color outlineColor    = circ.getOutlineColor();
+  const float     outlineTickness = circ.getOutlineThickness();
 
-  // e->cShape->circle.getOrigin();
-  // auto smallEnemy       = m_entities.addEntity("smallEnemy");
-  // smallEnemy->cTransform = std::make_shared<CTransform>(Vec2(ex, ey),
-  // velocity, 0.0f); smallEnemy->cShape     =
-  // std::make_shared<CShape>(m_enemyConfig.SR, m_enemyConfig.VMIN, sf::Color(r,
-  // g, b),
-  //                                          sf::Color(m_enemyConfig.OR,
-  //                                          m_enemyConfig.OG,
-  //                                          m_enemyConfig.OB),
-  //                                          m_enemyConfig.OT);
-  // smallEnemy->cLifespan = std::make_shared<CLifespan>(m_enemyConfig.L);
+  origin = {circ.getPosition().x, circ.getPosition().y};
+
+  for (int v = 0; v < vertices; v++)
+  {
+    newOrigin = Vec2(std::sin(2 * M_PI / vertices * v), std::cos(2 * M_PI / vertices * v));
+    Vec2 vel  = newOrigin.normalize() * 0.8f;
+
+    std::shared_ptr<Entity> smallEnemy;
+    smallEnemy             = m_entities.addEntity("smallEnemy");
+    smallEnemy->cTransform = std::make_shared<CTransform>(origin, vel, 0.0f);
+    smallEnemy->cShape     = std::make_shared<CShape>(radius, vertices, color, outlineColor, outlineTickness);
+    smallEnemy->cLifespan  = std::make_shared<CLifespan>(m_enemyConfig.L);
+  }
 }
 
 void Game::sCollision()
@@ -196,6 +210,8 @@ void Game::sCollision()
       {
         bullet->destroy();
         enemy->destroy();
+        m_player->cScore->score += 100 * enemy->cShape->circle.getPointCount();
+        spawnSmallEnemies(enemy);
       }
     }
   }
@@ -272,6 +288,7 @@ void Game::sCollision()
         enemy->destroy();
         player->destroy();
         spawnPlayer();
+        spawnSmallEnemies(enemy);
       }
     }
   }
@@ -295,6 +312,10 @@ void Game::sRender()
 
   for (auto e : m_entities.getEntities())
   {
+    if (e->cScore)
+    {
+      m_window.draw(e->cScore->Score);
+    }
     if (e->cShape && e->cTransform)
     {
       // set the position of the shape based on the entity's transform->pos
@@ -309,8 +330,8 @@ void Game::sRender()
       m_window.draw(e->cShape->circle);
     }
   }
-  // draw the ui lsat
-  //
+
+  // draw the ui last
   ImGui::SFML::Render(m_window);
 
   m_window.display();
@@ -421,7 +442,6 @@ void Game::sMovement()
 
 void Game::sLifespan()
 {
-
   // TODO: implement all lifespan functionality
   //
   //  if entity has > 0 remaining lifespan, subtract 1
@@ -439,6 +459,30 @@ void Game::sLifespan()
       if (e->cLifespan->remaining <= 0) e->destroy();
     }
   }
+  for (auto &e : m_entities.getEntities("smallEnemy"))
+  {
+    if (e->cLifespan) // if entity has no lifespan component, skip it
+    {
+      static sf::CircleShape circ      = e->cShape->circle;
+      static sf::Color       fillColor = circ.getFillColor(), outLineColor = circ.getOutlineColor();
+
+      e->cLifespan->remaining--;
+
+      int alpha = (float)e->cLifespan->remaining / e->cLifespan->total * 255;
+      e->cShape->circle.setFillColor(sf::Color(fillColor.r, fillColor.g, fillColor.b, alpha));
+      e->cShape->circle.setOutlineColor(sf::Color(outLineColor.r, outLineColor.g, outLineColor.b, alpha));
+
+      if (e->cLifespan->remaining <= 0) e->destroy();
+    }
+  }
+}
+
+void Game::sScore()
+{
+  // TODO: put the score in the TOP-LEFT corner
+  static std::string newScore;
+  newScore = std::to_string(m_player->cScore->score);
+  m_player->cScore->Score.setString("Score: " + newScore);
 }
 
 void spawnSpecialWeapon(std::shared_ptr<Entity> entity)

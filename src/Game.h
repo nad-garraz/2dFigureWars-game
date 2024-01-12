@@ -13,6 +13,7 @@
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+#include <cmath>
 
 struct WindowConfig
 {
@@ -76,6 +77,7 @@ class Game
   void sRender();       // System: Render / Drawing
   void sEnemySpawner(); // System: Spawns Enemies
   void sCollision();    // System: Collisions
+  void sScore();        // System Score
   void sGUI();
 
   void spawnPlayer();

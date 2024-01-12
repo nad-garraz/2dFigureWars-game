@@ -31,7 +31,7 @@ public:
     circle.setOutlineColor(outline);
     circle.setOutlineThickness(thickness);
     circle.setOrigin(radius, radius);
-  };
+  }
 };
 
 class CCollision
@@ -47,10 +47,21 @@ public:
 class CScore
 {
 public:
-  int score = 0;
-  CScore(int s)
+  int      score = 0;
+  sf::Text Score;
+  sf::Font myFont;
+  CScore(int s, const std::string fontPath, int fontSize, const sf::Color color)
       : score(s)
   {
+    if (!myFont.loadFromFile(fontPath))
+    {
+      std::cerr << "Could not load font!\n";
+    }
+    Score.setFont(myFont);
+    Score.setCharacterSize(fontSize);
+    Score.setFillColor(color);
+    Score.setPosition(0, 0);
+    Score.setString(std::to_string(score));
   }
 };
 
