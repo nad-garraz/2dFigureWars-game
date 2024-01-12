@@ -161,7 +161,7 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> e)
   //  enemy
   //  - set each small enemy to the same color as the original, half the size
   //  - small enemies are worth double points of the original enemy
-  static int vertices, radius;
+  static int      vertices, radius;
   sf::CircleShape circ(e->cShape->circle);
   vertices = circ.getPointCount();
   radius   = circ.getRadius() / 2;
@@ -170,7 +170,7 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> e)
   const sf::Color outlineColor    = circ.getOutlineColor();
   const float     outlineTickness = circ.getOutlineThickness();
 
-  origin = {circ.getPosition().x, circ.getPosition().y};
+  origin                          = {circ.getPosition().x, circ.getPosition().y};
 
   for (int v = 0; v < vertices; v++)
   {
@@ -296,8 +296,12 @@ void Game::sCollision()
 
 void Game::sEnemySpawner()
 {
-  if (m_currentFrame - m_lastEnemySpawnTime > 600)
-  // if (m_currentFrame - m_lastEnemySpawnTime > m_enemyConfig.SI)
+  // if (m_currentFrame - m_lastEnemySpawnTime > 600)
+  // if there are more than 5 entity enemies, then slow down spawn speed
+  if (m_currentFrame % 60 == 0 && m_entities.getEntities("enemy").size() <= 5 && m_enemyConfig.SI > 60) m_enemyConfig.SI -= 5;
+  else if (m_currentFrame % 60 == 0 && m_entities.getEntities("enemy").size() > 5 && m_enemyConfig.SI < 600) m_enemyConfig.SI +=5;
+  std::cout << m_enemyConfig.SI << std::endl;
+  if (m_currentFrame - m_lastEnemySpawnTime > m_enemyConfig.SI)
   {
     spawnEnemy();
     m_lastEnemySpawnTime = m_currentFrame;
@@ -463,8 +467,7 @@ void Game::sLifespan()
   {
     if (e->cLifespan) // if entity has no lifespan component, skip it
     {
-      static sf::CircleShape circ      = e->cShape->circle;
-      static sf::Color       fillColor = circ.getFillColor(), outLineColor = circ.getOutlineColor();
+      sf::Color fillColor = e->cShape->circle.getFillColor(), outLineColor = e->cShape->circle.getOutlineColor();
 
       e->cLifespan->remaining--;
 
