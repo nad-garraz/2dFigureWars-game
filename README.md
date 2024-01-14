@@ -24,10 +24,10 @@ To compile and run the game, you need to have the following dependencies install
 ## Installation
 
 1. Clone the repository:
-
+```
    bash
    git clone https://github.com/nad-garraz/2dFigureWars-game.git
-   ```
+```
 
 2. Install SFML library following the instructions for your operating system: [SFML Installation Guide](https://www.sfml-dev.org/tutorials/2.5/start-linux.php).
 
@@ -36,19 +36,19 @@ To compile and run the game, you need to have the following dependencies install
 ## Usage
 
 1. Navigate to the project directory:
-
+   ```
    bash
    cd 2dFigureWars-game
    ```
 
 2. Compile the game using the provided Makefile:
-
+   ```
    bash
    make
    ```
 
 3. Run the game:
-
+   ```
    bash
    make run
    ```
@@ -58,9 +58,10 @@ To compile and run the game, you need to have the following dependencies install
 ## Cleaning Up
 
 To remove the compiled binaries and object files, you can use the following command:
-
-bash
-make clean
+   ```
+   bash
+   make clean
+   ```
 
 
 ## Contributing
