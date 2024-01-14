@@ -1,4 +1,5 @@
 #include "Game.h"
+#include <memory>
 
 Game::Game(const std::string &config) { init(config); }
 
@@ -182,8 +183,21 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> e)
     smallEnemy->cTransform = std::make_shared<CTransform>(origin, vel, 0.0f);
     smallEnemy->cShape     = std::make_shared<CShape>(radius, vertices, color, outlineColor, outlineTickness);
     smallEnemy->cLifespan  = std::make_shared<CLifespan>(m_enemyConfig.L);
-    smallEnemy->cCollision  = std::make_shared<CCollision>(radius);
+    smallEnemy->cCollision = std::make_shared<CCollision>(radius);
   }
+}
+
+void Game::spawnSpecialWeapon(const Vec2 &target)
+{
+  std::shared_ptr<Entity> sW;
+  sW             = m_entities.addEntity("specialWeapon");
+
+  Vec2 origin    = target;
+
+  sW->cTransform = std::make_shared<CTransform>(origin, Vec2(0, 0), 0.0f);
+  sW->cShape     = std::make_shared<CShape>(20.0f, 3, sf::Color(0, 0, 0), sf::Color(100, 100, 100), 10.0f);
+  sW->cLifespan  = std::make_shared<CLifespan>(600);
+  sW->cCollision = std::make_shared<CCollision>(30.0f);
 }
 
 void Game::sCollision()
@@ -317,6 +331,31 @@ void Game::sCollision()
       }
     }
   }
+
+  // specialWeapon
+  auto sW_vec = m_entities.getEntities("specialWeapon");
+  if (!sW_vec.empty())
+  {
+    auto sW = sW_vec[0];
+    int  sWR = sW->cCollision->radius;
+    Vec2 sWP(sW->cShape->circle.getPosition().x, sW->cShape->circle.getPosition().y);
+    for (auto &enemy : m_entities.getEntities("enemy"))
+    {
+      int  enemyR = enemy->cCollision->radius;
+      Vec2 enemyP(enemy->cShape->circle.getPosition().x, enemy->cShape->circle.getPosition().y);
+      // Hacky line to prevent those spawny collisions at (0,0)
+      // that I don't understand
+      if (enemyP == Vec2(0, 0)) continue;
+
+      float dist_sWE          = enemyP.dist(sWP);
+      float collisionDistance = (sWR + enemyR);
+
+      if (dist_sWE <= collisionDistance)
+      {
+        enemy->destroy();
+      }
+    }
+  }
 };
 
 void Game::sEnemySpawner()
@@ -440,7 +479,8 @@ void Game::sUserInput()
 
         if (event.mouseButton.button == sf::Mouse::Right)
         {
-          // call spawnSpecialWeapon here
+          if(m_entities.getEntities("specialWeapon").empty()) // If the vector as a specialWeapon, I can not spawn a new one.
+          spawnSpecialWeapon(Vec2(event.mouseButton.x, event.mouseButton.y));
         }
       }
     }
@@ -462,6 +502,20 @@ void Game::sMovement()
 
   // Update velocity
   m_player->cTransform->velocity = m_player->cTransform->velocity.normalize() * m_playerConfig.S;
+
+  // specialWeapon
+  auto SW = m_entities.getEntities("specialWeapon");
+  if (!SW.empty())
+  {
+    auto sW = SW[0];
+    for (auto &e : m_entities.getEntities("enemy"))
+    {
+      Vec2  accDir             = (sW->cTransform->pos - e->cTransform->pos).normalize();
+      float d                  = (sW->cTransform->pos - e->cTransform->pos).length();
+      Vec2  a                  = accDir * 50 / d;
+      e->cTransform->velocity += a;
+    }
+  }
 
   // Sample movement speed update
   for (auto &e : m_entities.getEntities())
@@ -504,6 +558,12 @@ void Game::sLifespan()
       if (e->cLifespan->remaining <= 0) e->destroy();
     }
   }
+
+  for (auto sW : m_entities.getEntities("specialWeapon"))
+  {
+    sW->cLifespan->remaining--;
+    if (sW->cLifespan->remaining == 0) sW->destroy();
+  }
 }
 
 void Game::sScore()
@@ -512,11 +572,6 @@ void Game::sScore()
   static std::string newScore;
   newScore = std::to_string(m_player->cScore->score);
   m_player->cScore->Score.setString("Score: " + newScore);
-}
-
-void spawnSpecialWeapon(std::shared_ptr<Entity> entity)
-{
-  // TODO: implement your own special weapon
 }
 
 void Game::sGUI()

@@ -10,10 +10,10 @@
 
 #include <SFML/Graphics.hpp>
 
+#include <cmath>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
-#include <cmath>
 
 struct WindowConfig
 {
@@ -64,7 +64,7 @@ class Game
   int              m_lastEnemySpawnTime = 0;
   bool             m_paused             = false; // whether we update game logic
   bool             m_running            = true;  // whether the game is running
-  sf::Clock        m_deltaClock; // imgui
+  sf::Clock        m_deltaClock;                 // imgui
 
   std::shared_ptr<Entity> m_player;
 
@@ -84,8 +84,7 @@ class Game
   void spawnEnemy();
   void spawnSmallEnemies(std::shared_ptr<Entity> entity);
   void spawnBullet(std::shared_ptr<Entity> entity, const Vec2 &mousePos);
-  void spawnSpecialWeapon(std::shared_ptr<Entity> entity);
-
+  void spawnSpecialWeapon(const Vec2 &target);
 
 public:
   Game(const std::string &config); // constructor, takes in game config
