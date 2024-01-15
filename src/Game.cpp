@@ -40,7 +40,6 @@ void Game::init(const std::string &path)
   std::srand(time(NULL));
 
   ImGui::SFML::Init(m_window);
-
 }
 
 void Game::run()
@@ -201,22 +200,192 @@ void Game::spawnSpecialWeapon(const Vec2 &target)
   sW->cCollision = std::make_shared<CCollision>(30.0f);
 }
 
+// void Game::sCollision()
+// {
+//   /*
+//    * bullets and enemies
+//    */
+//   for (auto bullet : m_entities.getEntities("bullet"))
+//   {
+//     int  bulletR = bullet->cCollision->radius;
+//     Vec2 bulletP(bullet->cShape->circle.getPosition().x,
+//     bullet->cShape->circle.getPosition().y);
+//
+//     for (auto enemy : m_entities.getEntities("enemy"))
+//     {
+//       int  enemyR = enemy->cCollision->radius;
+//       Vec2 enemyP(enemy->cShape->circle.getPosition().x,
+//       enemy->cShape->circle.getPosition().y);
+//       // Hacky line to prevent those spawny collisions at (0,0)
+//       // that I don't understand
+//       if (enemyP == Vec2(0, 0)) continue;
+//
+//       float distBE            = enemyP.dist(bulletP);
+//       float collisionDistance = (bulletR + enemyR);
+//
+//       if (distBE <= collisionDistance)
+//       {
+//         bullet->destroy();
+//         enemy->destroy();
+//         m_player->cScore->score += 100 *
+//         enemy->cShape->circle.getPointCount(); spawnSmallEnemies(enemy);
+//       }
+//     }
+//   }
+//
+//   for (auto bullet : m_entities.getEntities("bullet"))
+//   {
+//     int  bulletR = bullet->cCollision->radius;
+//     Vec2 bulletP(bullet->cShape->circle.getPosition().x,
+//     bullet->cShape->circle.getPosition().y);
+//
+//     for (auto sEnemy : m_entities.getEntities("smallEnemy"))
+//     {
+//       int  enemyR = sEnemy->cCollision->radius;
+//       Vec2 enemyP(sEnemy->cShape->circle.getPosition().x,
+//       sEnemy->cShape->circle.getPosition().y);
+//       // Hacky line to prevent those spawny collisions at (0,0)
+//       // that I don't understand
+//       if (enemyP == Vec2(0, 0)) continue;
+//
+//       float distBE            = enemyP.dist(bulletP);
+//       float collisionDistance = (bulletR + enemyR);
+//
+//       if (distBE <= collisionDistance)
+//       {
+//         bullet->destroy();
+//         sEnemy->destroy();
+//         m_player->cScore->score += 200 *
+//         sEnemy->cShape->circle.getPointCount();
+//       }
+//     }
+//   }
+//   /*
+//    * Enemies and Walls
+//    */
+//   for (auto &enemy : m_entities.getEntities("enemy"))
+//   { // Collisions in the screen's border
+//     int enemyR = enemy->cCollision->radius;
+//
+//     Vec2 enemyP(enemy->cShape->circle.getPosition().x,
+//     enemy->cShape->circle.getPosition().y);
+//     // Hacky line to prevent those spawny collisions at (0,0)
+//     // that I don't understand
+//     if (enemyP == Vec2(0, 0)) continue;
+//
+//     float enemyTop    = enemyP.y - enemyR;
+//     float enemyBottom = enemyP.y + enemyR;
+//     float enemyLeft   = enemyP.x - enemyR;
+//     float enemyRight  = enemyP.x + enemyR;
+//
+//     Vec2 vel(enemy->cTransform->velocity);
+//     if ((enemyBottom >= m_window.getSize().y && vel.y > 0) || (enemyTop <= 0
+//     && vel.y < 0))
+//     {
+//       enemy->cTransform->velocity.y *= -1.0f;
+//     }
+//     if ((enemyRight >= m_window.getSize().x && vel.x > 0) || (enemyLeft <= 0
+//     && vel.x < 0))
+//     {
+//       enemy->cTransform->velocity.x *= -1.0f;
+//     }
+//   }
+//
+//   /*
+//    * Player and Walls
+//    * and Player and enemies
+//    */
+//   for (auto player : m_entities.getEntities("player"))
+//   {
+//     float playerR = player->cCollision->radius;
+//
+//     Vec2 playerP(player->cShape->circle.getPosition().x,
+//     player->cShape->circle.getPosition().y);
+//
+//     int playerTop    = playerP.y - playerR;
+//     int playerBottom = playerP.y + playerR;
+//     int playerLeft   = playerP.x - playerR;
+//     int playerRight  = playerP.x + playerR;
+//
+//     // Prevent Shape from going beyond screen limits
+//     Vec2 vel(player->cTransform->velocity);
+//
+//     if (playerBottom >= m_windowConfig.height && vel.y > 0)
+//     player->cTransform->pos.y = m_windowConfig.height - playerR;
+//
+//     if (playerTop <= 0 && vel.y < 0) player->cTransform->pos.y = 0 + playerR;
+//
+//     if (playerRight >= m_windowConfig.width && vel.x > 0)
+//     player->cTransform->pos.x = m_windowConfig.width - playerR; if
+//     (playerLeft <= 0 && vel.x < 0) player->cTransform->pos.x = 0 + playerR;
+//
+//     /*
+//     // Collision Player enemies
+//     */
+//     for (auto enemy : m_entities.getEntities("enemy"))
+//     {
+//       int  enemyR = enemy->cCollision->radius;
+//       Vec2 enemyP(enemy->cShape->circle.getPosition().x,
+//       enemy->cShape->circle.getPosition().y);
+//       // Hacky line to prevent those spawny collisions at (0,0)
+//       // that I don't understand
+//       if (enemyP == Vec2(0, 0)) continue;
+//
+//       float distPE            = enemyP.dist(playerP);
+//       float collisionDistance = (playerR + enemyR);
+//
+//       if (distPE <= collisionDistance)
+//       {
+//         enemy->destroy();
+//         player->destroy();
+//         spawnPlayer();
+//         spawnSmallEnemies(enemy);
+//       }
+//     }
+//   }
+//
+//   // specialWeapon
+//   auto sW_vec = m_entities.getEntities("specialWeapon");
+//   if (!sW_vec.empty())
+//   {
+//     auto sW = sW_vec[0];
+//     int  sWR = sW->cCollision->radius;
+//     Vec2 sWP(sW->cShape->circle.getPosition().x,
+//     sW->cShape->circle.getPosition().y); for (auto &enemy :
+//     m_entities.getEntities("enemy"))
+//     {
+//       int  enemyR = enemy->cCollision->radius;
+//       Vec2 enemyP(enemy->cShape->circle.getPosition().x,
+//       enemy->cShape->circle.getPosition().y);
+//       // Hacky line to prevent those spawny collisions at (0,0)
+//       // that I don't understand
+//       if (enemyP == Vec2(0, 0)) continue;
+//
+//       float dist_sWE          = enemyP.dist(sWP);
+//       float collisionDistance = (sWR + enemyR);
+//
+//       if (dist_sWE <= collisionDistance)
+//       {
+//         enemy->destroy();
+//         m_player->cScore->score += 100 *
+//         enemy->cShape->circle.getPointCount();
+//       }
+//     }
+//   }
+// };
+
 void Game::sCollision()
 {
-  /*
-   * bullets and enemies
-   */
-  for (auto bullet : m_entities.getEntities("bullet"))
+  auto checkBulletCollision = [&](std::shared_ptr<Entity> bullet, const std::string &enemyType, int scoreMultiplier)
   {
     int  bulletR = bullet->cCollision->radius;
     Vec2 bulletP(bullet->cShape->circle.getPosition().x, bullet->cShape->circle.getPosition().y);
 
-    for (auto enemy : m_entities.getEntities("enemy"))
+    for (auto enemy : m_entities.getEntities(enemyType))
     {
       int  enemyR = enemy->cCollision->radius;
       Vec2 enemyP(enemy->cShape->circle.getPosition().x, enemy->cShape->circle.getPosition().y);
-      // Hacky line to prevent those spawny collisions at (0,0)
-      // that I don't understand
+
       if (enemyP == Vec2(0, 0)) continue;
 
       float distBE            = enemyP.dist(bulletP);
@@ -226,46 +395,67 @@ void Game::sCollision()
       {
         bullet->destroy();
         enemy->destroy();
-        m_player->cScore->score += 100 * enemy->cShape->circle.getPointCount();
+        m_player->cScore->score += scoreMultiplier * enemy->cShape->circle.getPointCount();
+        if (enemyType == "enemy") spawnSmallEnemies(enemy);
+      }
+    }
+  };
+
+  auto checkPlayerCollision = [&](std::shared_ptr<Entity> player, const std::string &enemyType)
+  {
+    float playerR = player->cCollision->radius;
+    Vec2  playerP(player->cShape->circle.getPosition().x, player->cShape->circle.getPosition().y);
+
+    int playerTop    = playerP.y - playerR;
+    int playerBottom = playerP.y + playerR;
+    int playerLeft   = playerP.x - playerR;
+    int playerRight  = playerP.x + playerR;
+
+    Vec2 vel(player->cTransform->velocity);
+
+    if (playerBottom >= m_windowConfig.height && vel.y > 0) player->cTransform->pos.y = m_windowConfig.height - playerR;
+    if (playerTop <= 0 && vel.y < 0) player->cTransform->pos.y = 0 + playerR;
+    if (playerRight >= m_windowConfig.width && vel.x > 0) player->cTransform->pos.x = m_windowConfig.width - playerR;
+    if (playerLeft <= 0 && vel.x < 0) player->cTransform->pos.x = 0 + playerR;
+
+    for (auto enemy : m_entities.getEntities(enemyType))
+    {
+      int  enemyR = enemy->cCollision->radius;
+      Vec2 enemyP(enemy->cShape->circle.getPosition().x, enemy->cShape->circle.getPosition().y);
+
+      if (enemyP == Vec2(0, 0)) continue;
+
+      float distPE            = enemyP.dist(playerP);
+      float collisionDistance = (playerR + enemyR);
+
+      if (distPE <= collisionDistance)
+      {
+        enemy->destroy();
+        player->destroy();
+        spawnPlayer();
         spawnSmallEnemies(enemy);
       }
     }
-  }
+  };
 
+  // bullets and enemies collision
   for (auto bullet : m_entities.getEntities("bullet"))
   {
-    int  bulletR = bullet->cCollision->radius;
-    Vec2 bulletP(bullet->cShape->circle.getPosition().x, bullet->cShape->circle.getPosition().y);
-
-    for (auto sEnemy : m_entities.getEntities("smallEnemy"))
-    {
-      int  enemyR = sEnemy->cCollision->radius;
-      Vec2 enemyP(sEnemy->cShape->circle.getPosition().x, sEnemy->cShape->circle.getPosition().y);
-      // Hacky line to prevent those spawny collisions at (0,0)
-      // that I don't understand
-      if (enemyP == Vec2(0, 0)) continue;
-
-      float distBE            = enemyP.dist(bulletP);
-      float collisionDistance = (bulletR + enemyR);
-
-      if (distBE <= collisionDistance)
-      {
-        bullet->destroy();
-        sEnemy->destroy();
-        m_player->cScore->score += 200 * sEnemy->cShape->circle.getPointCount();
-      }
-    }
+    checkBulletCollision(bullet, "enemy", 100);
   }
-  /*
-   * Enemies and Walls
-   */
-  for (auto &enemy : m_entities.getEntities("enemy"))
-  { // Collisions in the screen's border
-    int enemyR = enemy->cCollision->radius;
 
+  // bullets and small enemies collision
+  for (auto bullet : m_entities.getEntities("bullet"))
+  {
+    checkBulletCollision(bullet, "smallEnemy", 200);
+  }
+
+  // enemies and walls collision
+  for (auto &enemy : m_entities.getEntities("enemy"))
+  {
+    int  enemyR = enemy->cCollision->radius;
     Vec2 enemyP(enemy->cShape->circle.getPosition().x, enemy->cShape->circle.getPosition().y);
-    // Hacky line to prevent those spawny collisions at (0,0)
-    // that I don't understand
+
     if (enemyP == Vec2(0, 0)) continue;
 
     float enemyTop    = enemyP.y - enemyR;
@@ -284,68 +474,25 @@ void Game::sCollision()
     }
   }
 
-  /*
-   * Player and Walls
-   * and Player and enemies
-   */
+  // player and enemies collision
   for (auto player : m_entities.getEntities("player"))
   {
-    float playerR = player->cCollision->radius;
-
-    Vec2 playerP(player->cShape->circle.getPosition().x, player->cShape->circle.getPosition().y);
-
-    int playerTop    = playerP.y - playerR;
-    int playerBottom = playerP.y + playerR;
-    int playerLeft   = playerP.x - playerR;
-    int playerRight  = playerP.x + playerR;
-
-    // Prevent Shape from going beyond screen limits
-    Vec2 vel(player->cTransform->velocity);
-
-    if (playerBottom >= m_windowConfig.height && vel.y > 0) player->cTransform->pos.y = m_windowConfig.height - playerR;
-
-    if (playerTop <= 0 && vel.y < 0) player->cTransform->pos.y = 0 + playerR;
-
-    if (playerRight >= m_windowConfig.width && vel.x > 0) player->cTransform->pos.x = m_windowConfig.width - playerR;
-    if (playerLeft <= 0 && vel.x < 0) player->cTransform->pos.x = 0 + playerR;
-
-    /*
-    // Collision Player enemies
-    */
-    for (auto enemy : m_entities.getEntities("enemy"))
-    {
-      int  enemyR = enemy->cCollision->radius;
-      Vec2 enemyP(enemy->cShape->circle.getPosition().x, enemy->cShape->circle.getPosition().y);
-      // Hacky line to prevent those spawny collisions at (0,0)
-      // that I don't understand
-      if (enemyP == Vec2(0, 0)) continue;
-
-      float distPE            = enemyP.dist(playerP);
-      float collisionDistance = (playerR + enemyR);
-
-      if (distPE <= collisionDistance)
-      {
-        enemy->destroy();
-        player->destroy();
-        spawnPlayer();
-        spawnSmallEnemies(enemy);
-      }
-    }
+    checkPlayerCollision(player, "enemy");
   }
 
-  // specialWeapon
+  // special weapon and enemies collision
   auto sW_vec = m_entities.getEntities("specialWeapon");
   if (!sW_vec.empty())
   {
-    auto sW = sW_vec[0];
+    auto sW  = sW_vec[0];
     int  sWR = sW->cCollision->radius;
     Vec2 sWP(sW->cShape->circle.getPosition().x, sW->cShape->circle.getPosition().y);
+
     for (auto &enemy : m_entities.getEntities("enemy"))
     {
       int  enemyR = enemy->cCollision->radius;
       Vec2 enemyP(enemy->cShape->circle.getPosition().x, enemy->cShape->circle.getPosition().y);
-      // Hacky line to prevent those spawny collisions at (0,0)
-      // that I don't understand
+
       if (enemyP == Vec2(0, 0)) continue;
 
       float dist_sWE          = enemyP.dist(sWP);
@@ -358,7 +505,7 @@ void Game::sCollision()
       }
     }
   }
-};
+}
 
 void Game::sEnemySpawner()
 {
@@ -481,8 +628,9 @@ void Game::sUserInput()
 
         if (event.mouseButton.button == sf::Mouse::Right)
         {
-          if(m_entities.getEntities("specialWeapon").empty()) // If the vector as a specialWeapon, I can not spawn a new one.
-          spawnSpecialWeapon(Vec2(event.mouseButton.x, event.mouseButton.y));
+          if (m_entities.getEntities("specialWeapon").empty()) // If the vector as a specialWeapon, I can not spawn
+                                                               // a new one.
+            spawnSpecialWeapon(Vec2(event.mouseButton.x, event.mouseButton.y));
         }
       }
     }
@@ -514,7 +662,7 @@ void Game::sMovement()
     {
       Vec2  accDir             = (sW->cTransform->pos - e->cTransform->pos).normalize();
       float d                  = (sW->cTransform->pos - e->cTransform->pos).length();
-      Vec2  a                  = accDir * 10000 / (d*d);
+      Vec2  a                  = accDir * 10000 / (d * d);
       e->cTransform->velocity += a;
     }
   }
