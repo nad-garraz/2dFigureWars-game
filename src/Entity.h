@@ -30,7 +30,9 @@ public:
   bool isActive() const;
   const std::string &tag() const;
   const size_t &id() const;
+  const int getId(){return m_id;}
 
+  const std::string getTag(){ return m_tag; }
   void destroy();
 };
 

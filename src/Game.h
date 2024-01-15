@@ -64,7 +64,14 @@ class Game
   int              m_lastEnemySpawnTime = 0;
   bool             m_paused             = false; // whether we update game logic
   bool             m_running            = true;  // whether the game is running
-  sf::Clock        m_deltaClock;                 // imgui
+
+  sf::Clock m_deltaClock; // imgui
+  bool      m_toggleMovement     = true;
+  bool      m_toggleUserInput    = true;
+  bool      m_toggleLifespan     = true;
+  bool      m_toggleScore        = true;
+  bool      m_toggleCollision    = true;
+  bool      m_toggleEnemySpawner = true;
 
   std::shared_ptr<Entity> m_player;
 

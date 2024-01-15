@@ -58,11 +58,11 @@ void Game::run()
     sUserInput();
     if (!m_paused)
     {
-      sMovement();
-      sCollision();
-      sEnemySpawner();
-      sLifespan();
-      sScore();
+      if (m_toggleMovement) sMovement();
+      if (m_toggleCollision) sCollision();
+      if (m_toggleEnemySpawner) sEnemySpawner();
+      if (m_toggleLifespan) sLifespan();
+      if (m_toggleScore) sScore();
       m_currentFrame++;
     }
     sGUI();
@@ -77,11 +77,14 @@ void Game::spawnPlayer()
   auto playerEntity = m_entities.addEntity("player");
 
   Vec2 middleOfWindow(m_window.getSize().x * 0.5, m_window.getSize().y * 0.5);
+
   playerEntity->cTransform = std::make_shared<CTransform>(middleOfWindow, Vec2(0, 0), 0.0f);
 
-  playerEntity->cShape     = std::make_shared<CShape>(
-      m_playerConfig.SR, m_playerConfig.V, sf::Color(m_playerConfig.FR, m_playerConfig.FG, m_playerConfig.FB),
-      sf::Color(m_playerConfig.OR, m_playerConfig.OG, m_playerConfig.OB), m_playerConfig.OT);
+  sf::Color fillColor      = sf::Color(m_playerConfig.FR, m_playerConfig.FG, m_playerConfig.FB);
+  sf::Color outlineColor   = sf::Color(m_playerConfig.OR, m_playerConfig.OG, m_playerConfig.OB);
+
+  playerEntity->cShape =
+      std::make_shared<CShape>(m_playerConfig.SR, m_playerConfig.V, fillColor, outlineColor, m_playerConfig.OT);
 
   // Add collisions
   playerEntity->cCollision = std::make_shared<CCollision>(m_playerConfig.CR);
@@ -90,8 +93,9 @@ void Game::spawnPlayer()
   playerEntity->cInput = std::make_shared<CInput>();
 
   // Add the score to the player
-  playerEntity->cScore = std::make_shared<CScore>(0, m_fontConfig.path, m_fontConfig.size,
-                                                  sf::Color(m_fontConfig.red, m_fontConfig.green, m_fontConfig.blue));
+  sf::Color fontColor  = sf::Color(m_fontConfig.red, m_fontConfig.green, m_fontConfig.blue);
+  playerEntity->cScore = std::make_shared<CScore>(0, m_fontConfig.path, m_fontConfig.size, fontColor);
+
   m_player             = playerEntity;
 }
 
@@ -107,13 +111,14 @@ void Game::spawnEnemy()
   // Random start Positiion inside screen
   Vec2  w(m_windowConfig.width, m_windowConfig.height);
   Vec2  radius(m_enemyConfig.SR, m_enemyConfig.SR);
-  float deltaY = 1 + (w.y - radius.y) - radius.y;
-  float deltaX = 1 + (w.x - radius.x) - radius.x;
-  float ex     = rand() % (int)deltaX + radius.x;
-  float ey     = rand() % (int)deltaY + radius.y;
+  float deltaY        = 1 + (w.y - radius.y) - radius.y; // 1 + MAX - MIN
+  float deltaX        = 1 + (w.x - radius.x) - radius.x; // 1 + MAX - MIN
+  float ex            = rand() % (int)deltaX + radius.x;
+  float ey            = rand() % (int)deltaY + radius.y;
+  Vec2  startPosition = Vec2(ex, ey);
 
   // Random velocity
-  float deltaS = 1 + m_enemyConfig.SMAX - m_enemyConfig.SMIN;
+  float deltaS = 1 + m_enemyConfig.SMAX - m_enemyConfig.SMIN; // 1 + MAX - MIN
   float speed  = rand() % (int)deltaS + m_enemyConfig.SMIN;
   int   signX  = rand() % 2 == 0 ? 1 : -1;
   int   signY  = rand() % 2 == 0 ? 1 : -1;
@@ -124,17 +129,14 @@ void Game::spawnEnemy()
   float V      = rand() % (int)deltaV + m_enemyConfig.VMIN;
 
   // Random FillColors
-  int   deltaColor   = 1 + 255 - 0; // 1 + MAX - MIN
-  float r            = rand() % deltaColor + 0;
-  float g            = rand() % deltaColor + 0;
-  float b            = rand() % deltaColor + 0;
+  int       deltaColor = 1 + 255 - 0; // 1 + MAX - MIN
+  sf::Color fillColor(rand() % deltaColor, rand() % deltaColor, rand() % deltaColor);
 
-  Vec2 startPosition = Vec2(ex, ey);
+  sf::Color outlineColor(m_enemyConfig.OR, m_enemyConfig.OG, m_enemyConfig.OB);
 
-  enemy->cTransform  = std::make_shared<CTransform>(startPosition, vel, 0.0f);
-  enemy->cShape      = std::make_shared<CShape>(m_enemyConfig.SR, V, sf::Color(r, g, b),
-                                           sf::Color(m_enemyConfig.OR, m_enemyConfig.OG, m_enemyConfig.OB), m_enemyConfig.OT);
-  enemy->cCollision  = std::make_shared<CCollision>(m_enemyConfig.CR);
+  enemy->cTransform = std::make_shared<CTransform>(startPosition, vel, 0.0f);
+  enemy->cShape     = std::make_shared<CShape>(m_enemyConfig.SR, V, fillColor, outlineColor, m_enemyConfig.OT);
+  enemy->cCollision = std::make_shared<CCollision>(m_enemyConfig.CR);
 };
 
 void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2 &target)
@@ -142,12 +144,12 @@ void Game::spawnBullet(std::shared_ptr<Entity> entity, const Vec2 &target)
   auto bullet          = m_entities.addEntity("bullet");
 
   Vec2 startPos        = m_player->cTransform->pos;
-  Vec2 targetDirection = (target - startPos).normalize();
+  Vec2 targetDirection = (target - startPos).normalize(); // bullet velocity direction
 
-  bullet->cTransform   = std::make_shared<CTransform>(startPos, targetDirection * m_bulletConfig.S, 0);
-  bullet->cShape       = std::make_shared<CShape>(
-      m_bulletConfig.SR, m_bulletConfig.V, sf::Color(m_bulletConfig.FR, m_bulletConfig.FG, m_bulletConfig.FB),
-      sf::Color(m_bulletConfig.OR, m_bulletConfig.OG, m_bulletConfig.OB), m_bulletConfig.OT);
+  sf::Color fillColor(m_bulletConfig.FR, m_bulletConfig.FG, m_bulletConfig.FB);
+  sf::Color outlineColor(m_bulletConfig.OR, m_bulletConfig.OG, m_bulletConfig.OB);
+  bullet->cTransform = std::make_shared<CTransform>(startPos, targetDirection * m_bulletConfig.S, 0);
+  bullet->cShape     = std::make_shared<CShape>(m_bulletConfig.SR, m_bulletConfig.V, fillColor, outlineColor, m_bulletConfig.OT);
   bullet->cCollision = std::make_shared<CCollision>(m_bulletConfig.CR);
   bullet->cLifespan  = std::make_shared<CLifespan>(m_bulletConfig.L);
 }
@@ -162,6 +164,7 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> e)
   //  enemy
   //  - set each small enemy to the same color as the original, half the size
   //  - small enemies are worth double points of the original enemy
+
   static int      vertices, radius;
   sf::CircleShape circ(e->cShape->circle);
   vertices = circ.getPointCount();
@@ -189,203 +192,36 @@ void Game::spawnSmallEnemies(std::shared_ptr<Entity> e)
 
 void Game::spawnSpecialWeapon(const Vec2 &target)
 {
+  // The specialWeapon is gonna be a black hole, that pulls the enemys
+  // towards it.
+
   std::shared_ptr<Entity> sW;
   sW             = m_entities.addEntity("specialWeapon");
 
   Vec2 origin    = target;
 
   sW->cTransform = std::make_shared<CTransform>(origin, Vec2(0, 0), 0.0f);
-  sW->cShape     = std::make_shared<CShape>(20.0f, 3, sf::Color(0, 0, 0), sf::Color(100, 100, 100), 10.0f);
+  sW->cShape     = std::make_shared<CShape>(10.0f, 50, sf::Color(0, 0, 0), sf::Color(0, 0, 0), 10.0f);
   sW->cLifespan  = std::make_shared<CLifespan>(600);
   sW->cCollision = std::make_shared<CCollision>(30.0f);
 }
 
-// void Game::sCollision()
-// {
-//   /*
-//    * bullets and enemies
-//    */
-//   for (auto bullet : m_entities.getEntities("bullet"))
-//   {
-//     int  bulletR = bullet->cCollision->radius;
-//     Vec2 bulletP(bullet->cShape->circle.getPosition().x,
-//     bullet->cShape->circle.getPosition().y);
-//
-//     for (auto enemy : m_entities.getEntities("enemy"))
-//     {
-//       int  enemyR = enemy->cCollision->radius;
-//       Vec2 enemyP(enemy->cShape->circle.getPosition().x,
-//       enemy->cShape->circle.getPosition().y);
-//       // Hacky line to prevent those spawny collisions at (0,0)
-//       // that I don't understand
-//       if (enemyP == Vec2(0, 0)) continue;
-//
-//       float distBE            = enemyP.dist(bulletP);
-//       float collisionDistance = (bulletR + enemyR);
-//
-//       if (distBE <= collisionDistance)
-//       {
-//         bullet->destroy();
-//         enemy->destroy();
-//         m_player->cScore->score += 100 *
-//         enemy->cShape->circle.getPointCount(); spawnSmallEnemies(enemy);
-//       }
-//     }
-//   }
-//
-//   for (auto bullet : m_entities.getEntities("bullet"))
-//   {
-//     int  bulletR = bullet->cCollision->radius;
-//     Vec2 bulletP(bullet->cShape->circle.getPosition().x,
-//     bullet->cShape->circle.getPosition().y);
-//
-//     for (auto sEnemy : m_entities.getEntities("smallEnemy"))
-//     {
-//       int  enemyR = sEnemy->cCollision->radius;
-//       Vec2 enemyP(sEnemy->cShape->circle.getPosition().x,
-//       sEnemy->cShape->circle.getPosition().y);
-//       // Hacky line to prevent those spawny collisions at (0,0)
-//       // that I don't understand
-//       if (enemyP == Vec2(0, 0)) continue;
-//
-//       float distBE            = enemyP.dist(bulletP);
-//       float collisionDistance = (bulletR + enemyR);
-//
-//       if (distBE <= collisionDistance)
-//       {
-//         bullet->destroy();
-//         sEnemy->destroy();
-//         m_player->cScore->score += 200 *
-//         sEnemy->cShape->circle.getPointCount();
-//       }
-//     }
-//   }
-//   /*
-//    * Enemies and Walls
-//    */
-//   for (auto &enemy : m_entities.getEntities("enemy"))
-//   { // Collisions in the screen's border
-//     int enemyR = enemy->cCollision->radius;
-//
-//     Vec2 enemyP(enemy->cShape->circle.getPosition().x,
-//     enemy->cShape->circle.getPosition().y);
-//     // Hacky line to prevent those spawny collisions at (0,0)
-//     // that I don't understand
-//     if (enemyP == Vec2(0, 0)) continue;
-//
-//     float enemyTop    = enemyP.y - enemyR;
-//     float enemyBottom = enemyP.y + enemyR;
-//     float enemyLeft   = enemyP.x - enemyR;
-//     float enemyRight  = enemyP.x + enemyR;
-//
-//     Vec2 vel(enemy->cTransform->velocity);
-//     if ((enemyBottom >= m_window.getSize().y && vel.y > 0) || (enemyTop <= 0
-//     && vel.y < 0))
-//     {
-//       enemy->cTransform->velocity.y *= -1.0f;
-//     }
-//     if ((enemyRight >= m_window.getSize().x && vel.x > 0) || (enemyLeft <= 0
-//     && vel.x < 0))
-//     {
-//       enemy->cTransform->velocity.x *= -1.0f;
-//     }
-//   }
-//
-//   /*
-//    * Player and Walls
-//    * and Player and enemies
-//    */
-//   for (auto player : m_entities.getEntities("player"))
-//   {
-//     float playerR = player->cCollision->radius;
-//
-//     Vec2 playerP(player->cShape->circle.getPosition().x,
-//     player->cShape->circle.getPosition().y);
-//
-//     int playerTop    = playerP.y - playerR;
-//     int playerBottom = playerP.y + playerR;
-//     int playerLeft   = playerP.x - playerR;
-//     int playerRight  = playerP.x + playerR;
-//
-//     // Prevent Shape from going beyond screen limits
-//     Vec2 vel(player->cTransform->velocity);
-//
-//     if (playerBottom >= m_windowConfig.height && vel.y > 0)
-//     player->cTransform->pos.y = m_windowConfig.height - playerR;
-//
-//     if (playerTop <= 0 && vel.y < 0) player->cTransform->pos.y = 0 + playerR;
-//
-//     if (playerRight >= m_windowConfig.width && vel.x > 0)
-//     player->cTransform->pos.x = m_windowConfig.width - playerR; if
-//     (playerLeft <= 0 && vel.x < 0) player->cTransform->pos.x = 0 + playerR;
-//
-//     /*
-//     // Collision Player enemies
-//     */
-//     for (auto enemy : m_entities.getEntities("enemy"))
-//     {
-//       int  enemyR = enemy->cCollision->radius;
-//       Vec2 enemyP(enemy->cShape->circle.getPosition().x,
-//       enemy->cShape->circle.getPosition().y);
-//       // Hacky line to prevent those spawny collisions at (0,0)
-//       // that I don't understand
-//       if (enemyP == Vec2(0, 0)) continue;
-//
-//       float distPE            = enemyP.dist(playerP);
-//       float collisionDistance = (playerR + enemyR);
-//
-//       if (distPE <= collisionDistance)
-//       {
-//         enemy->destroy();
-//         player->destroy();
-//         spawnPlayer();
-//         spawnSmallEnemies(enemy);
-//       }
-//     }
-//   }
-//
-//   // specialWeapon
-//   auto sW_vec = m_entities.getEntities("specialWeapon");
-//   if (!sW_vec.empty())
-//   {
-//     auto sW = sW_vec[0];
-//     int  sWR = sW->cCollision->radius;
-//     Vec2 sWP(sW->cShape->circle.getPosition().x,
-//     sW->cShape->circle.getPosition().y); for (auto &enemy :
-//     m_entities.getEntities("enemy"))
-//     {
-//       int  enemyR = enemy->cCollision->radius;
-//       Vec2 enemyP(enemy->cShape->circle.getPosition().x,
-//       enemy->cShape->circle.getPosition().y);
-//       // Hacky line to prevent those spawny collisions at (0,0)
-//       // that I don't understand
-//       if (enemyP == Vec2(0, 0)) continue;
-//
-//       float dist_sWE          = enemyP.dist(sWP);
-//       float collisionDistance = (sWR + enemyR);
-//
-//       if (dist_sWE <= collisionDistance)
-//       {
-//         enemy->destroy();
-//         m_player->cScore->score += 100 *
-//         enemy->cShape->circle.getPointCount();
-//       }
-//     }
-//   }
-// };
-
 void Game::sCollision()
 {
-  auto checkBulletCollision = [&](std::shared_ptr<Entity> bullet, const std::string &enemyType, int scoreMultiplier)
+  // Helper. Check for collision between playerAttacks and enemies
+  // If enemy dies, spawns smallEnemies. Collision between bullets and enemies
+  // will destroy bullets, but not the specialWeapon.
+  auto checkAttackCollision = [&](std::shared_ptr<Entity> &attackType, const std::string &enemyType, int scoreMultiplier)
   {
-    int  bulletR = bullet->cCollision->radius;
-    Vec2 bulletP(bullet->cShape->circle.getPosition().x, bullet->cShape->circle.getPosition().y);
+    int  bulletR = attackType->cCollision->radius;
+    Vec2 bulletP(attackType->cShape->circle.getPosition().x, attackType->cShape->circle.getPosition().y);
 
     for (auto enemy : m_entities.getEntities(enemyType))
     {
       int  enemyR = enemy->cCollision->radius;
       Vec2 enemyP(enemy->cShape->circle.getPosition().x, enemy->cShape->circle.getPosition().y);
 
+      // Entities are spawn in the left top corner, this avoids a glitch
       if (enemyP == Vec2(0, 0)) continue;
 
       float distBE            = enemyP.dist(bulletP);
@@ -393,7 +229,7 @@ void Game::sCollision()
 
       if (distBE <= collisionDistance)
       {
-        bullet->destroy();
+        if (attackType->getTag() == "bullet") attackType->destroy();
         enemy->destroy();
         m_player->cScore->score += scoreMultiplier * enemy->cShape->circle.getPointCount();
         if (enemyType == "enemy") spawnSmallEnemies(enemy);
@@ -401,6 +237,7 @@ void Game::sCollision()
     }
   };
 
+  // Helper. Establish player limits in the screen. Check for collision with enemies. 
   auto checkPlayerCollision = [&](std::shared_ptr<Entity> player, const std::string &enemyType)
   {
     float playerR = player->cCollision->radius;
@@ -433,7 +270,7 @@ void Game::sCollision()
         enemy->destroy();
         player->destroy();
         spawnPlayer();
-        spawnSmallEnemies(enemy);
+        if (enemy->getTag() == "enemy") spawnSmallEnemies(enemy);
       }
     }
   };
@@ -441,13 +278,13 @@ void Game::sCollision()
   // bullets and enemies collision
   for (auto bullet : m_entities.getEntities("bullet"))
   {
-    checkBulletCollision(bullet, "enemy", 100);
+    checkAttackCollision(bullet, "enemy", 100);
   }
 
   // bullets and small enemies collision
   for (auto bullet : m_entities.getEntities("bullet"))
   {
-    checkBulletCollision(bullet, "smallEnemy", 200);
+    checkAttackCollision(bullet, "smallEnemy", 200);
   }
 
   // enemies and walls collision
@@ -478,43 +315,24 @@ void Game::sCollision()
   for (auto player : m_entities.getEntities("player"))
   {
     checkPlayerCollision(player, "enemy");
+    checkPlayerCollision(player, "smallEnemy");
   }
 
-  // special weapon and enemies collision
-  auto sW_vec = m_entities.getEntities("specialWeapon");
-  if (!sW_vec.empty())
+  // specialWeapon and small enemies collision
+  for (auto specialWeapon : m_entities.getEntities("specialWeapon"))
   {
-    auto sW  = sW_vec[0];
-    int  sWR = sW->cCollision->radius;
-    Vec2 sWP(sW->cShape->circle.getPosition().x, sW->cShape->circle.getPosition().y);
-
-    for (auto &enemy : m_entities.getEntities("enemy"))
-    {
-      int  enemyR = enemy->cCollision->radius;
-      Vec2 enemyP(enemy->cShape->circle.getPosition().x, enemy->cShape->circle.getPosition().y);
-
-      if (enemyP == Vec2(0, 0)) continue;
-
-      float dist_sWE          = enemyP.dist(sWP);
-      float collisionDistance = (sWR + enemyR);
-
-      if (dist_sWE <= collisionDistance)
-      {
-        enemy->destroy();
-        m_player->cScore->score += 100 * enemy->cShape->circle.getPointCount();
-      }
-    }
+    checkAttackCollision(specialWeapon, "smallEnemy", 5);
+    checkAttackCollision(specialWeapon, "enemy", 10);
   }
 }
 
 void Game::sEnemySpawner()
 {
-  // if (m_currentFrame - m_lastEnemySpawnTime > 600)
   // if there are more than 5 entity enemies, then slow down spawn speed
-  if (m_currentFrame % 60 == 0 && m_entities.getEntities("enemy").size() <= 5 && m_enemyConfig.SI > 60) m_enemyConfig.SI -= 5;
-  else if (m_currentFrame % 60 == 0 && m_entities.getEntities("enemy").size() > 5 && m_enemyConfig.SI < 600)
+  int enemiesAlive = m_entities.getEntities("enemy").size();
+  if (m_currentFrame % 60 == 0 && enemiesAlive <= 5 && m_enemyConfig.SI > 60) m_enemyConfig.SI -= 5;
+  else if (m_currentFrame % 60 == 0 && enemiesAlive > 5 && m_enemyConfig.SI < 600)
     m_enemyConfig.SI += 5;
-  // std::cout << m_enemyConfig.SI << std::endl;
   if (m_currentFrame - m_lastEnemySpawnTime > m_enemyConfig.SI)
   {
     spawnEnemy();
@@ -526,7 +344,8 @@ void Game::sRender()
 {
   // TODO: change the code below to draw ALL of the entities
   // sample drawing of the player Entity that we have created
-  m_window.clear();
+  auto sW = m_entities.getEntities("specialWeapon");
+  sW.empty() ? m_window.clear(sf::Color(0, 0, 0, 255)) : m_window.clear(sf::Color(200, 200, 200, 255));
 
   for (auto e : m_entities.getEntities())
   {
@@ -654,18 +473,23 @@ void Game::sMovement()
   m_player->cTransform->velocity = m_player->cTransform->velocity.normalize() * m_playerConfig.S;
 
   // specialWeapon
-  auto SW = m_entities.getEntities("specialWeapon");
-  if (!SW.empty())
+  auto specialWeaponMovement = [&](std::string enemyType, int gravityPull)
   {
-    auto sW = SW[0];
-    for (auto &e : m_entities.getEntities("enemy"))
+    auto SW = m_entities.getEntities("specialWeapon");
+    if (!SW.empty())
     {
-      Vec2  accDir             = (sW->cTransform->pos - e->cTransform->pos).normalize();
-      float d                  = (sW->cTransform->pos - e->cTransform->pos).length();
-      Vec2  a                  = accDir * 10000 / (d * d);
-      e->cTransform->velocity += a;
+      auto sW = SW[0];
+      for (auto &e : m_entities.getEntities(enemyType))
+      {
+        Vec2  accDir             = (sW->cTransform->pos - e->cTransform->pos).normalize();
+        float d                  = (sW->cTransform->pos - e->cTransform->pos).length();
+        Vec2  a                  = accDir * gravityPull / (d * d);
+        e->cTransform->velocity += a;
+      }
     }
-  }
+  };
+  specialWeaponMovement("enemy", 10000);
+  specialWeaponMovement("smallEnemy", 15000);
 
   // Sample movement speed update
   for (auto &e : m_entities.getEntities())
@@ -726,17 +550,47 @@ void Game::sScore()
 
 void Game::sGUI()
 {
-  static float f1 = m_player->cShape->circle.getRadius();
-  // static float f1 = m_player->cShape->circle.getRadius();
+  static float f1  = m_player->cShape->circle.getRadius();
+  static float eSI = m_enemyConfig.SI;
+
   ImGui::Begin("Window title");
   ImGui::Text("Window Text!");
-  ImGui::DragFloat("drag float", &f1);
-  m_player->cShape->circle.setRadius(f1);
-  ImGui::Checkbox("Checkbox", &m_paused);
-  if (ImGui::Button("Pause"))
-  {
-    m_paused = !m_paused;
-  }
+  ImGui::Checkbox("Pause Game", &m_paused);
   ImGui::SameLine();
+  if (ImGui::Button("Pause")) m_paused = !m_paused;
+
+  ImGui::Checkbox("Toggle EnemySpawner", &m_toggleEnemySpawner);
+  ImGui::Checkbox("Toggle Score", &m_toggleScore);
+  ImGui::Checkbox("Toggle Collision", &m_toggleCollision);
+  ImGui::Checkbox("Toggle Movement", &m_toggleMovement);
+  ImGui::Checkbox("Toggle UserInput", &m_toggleUserInput);
+  ImGui::Checkbox("Toggle Lifespan", &m_toggleLifespan);
+
+  ImGui::DragFloat("drag float", &eSI);
+  m_enemyConfig.SI = eSI;
+  ImGui::BeginChild("Scrolling");
+  ImGui::BeginTable("table1", 4);
+  ImGui::TextColored(ImVec4(1, 1, 0, 1), "Important Stuff");
+  ImGui::TableSetupColumn("ID");
+  ImGui::TableSetupColumn("Vertices");
+  ImGui::TableSetupColumn("TAG");
+  ImGui::TableSetupColumn("Speed");
+  ImGui::TableHeadersRow();
+  for (auto e : m_entities.getEntities())
+  {
+    sf::Color fillColor = e->cShape->circle.getFillColor();
+    float r = (float)fillColor.r / 255, g = (float)fillColor.g / 255, b = (float)fillColor.b / 255, a = (float)fillColor.a / 255;
+    ImGui::TableNextColumn();
+    ImGui::TextColored(ImVec4(r, g, b, a), std::to_string(e->getId()).c_str());
+    ImGui::TableNextColumn();
+    ImGui::Text("%s", std::to_string(e->cShape->circle.getPointCount()).c_str());
+    ImGui::TableNextColumn();
+    ImGui::Text("%s", e->getTag().c_str());
+    ImGui::TableNextColumn();
+    ImGui::Text("%f", e->cTransform->velocity.length());
+  }
+
+  ImGui::EndTable();
+  ImGui::EndChild();
   ImGui::End();
 }
