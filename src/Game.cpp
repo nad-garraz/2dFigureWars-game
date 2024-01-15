@@ -31,8 +31,6 @@ void Game::init(const std::string &path)
                   m_windowConfig.fullscreen ? sf::Style::Fullscreen : sf::Style::None);
   m_window.setFramerateLimit(m_windowConfig.rate);
 
-  ImGui::SFML::Init(m_window);
-
   // Spawn the first player
   spawnPlayer();
   // Spawn the  first enemy
@@ -40,6 +38,9 @@ void Game::init(const std::string &path)
 
   // seed random generator
   std::srand(time(NULL));
+
+  ImGui::SFML::Init(m_window);
+
 }
 
 void Game::run()
@@ -251,7 +252,7 @@ void Game::sCollision()
       {
         bullet->destroy();
         sEnemy->destroy();
-        m_player->cScore->score += 400 * sEnemy->cShape->circle.getPointCount();
+        m_player->cScore->score += 200 * sEnemy->cShape->circle.getPointCount();
       }
     }
   }
@@ -353,6 +354,7 @@ void Game::sCollision()
       if (dist_sWE <= collisionDistance)
       {
         enemy->destroy();
+        m_player->cScore->score += 100 * enemy->cShape->circle.getPointCount();
       }
     }
   }
@@ -512,7 +514,7 @@ void Game::sMovement()
     {
       Vec2  accDir             = (sW->cTransform->pos - e->cTransform->pos).normalize();
       float d                  = (sW->cTransform->pos - e->cTransform->pos).length();
-      Vec2  a                  = accDir * 50 / d;
+      Vec2  a                  = accDir * 10000 / (d*d);
       e->cTransform->velocity += a;
     }
   }
