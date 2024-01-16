@@ -237,7 +237,8 @@ void Game::sCollision()
     }
   };
 
-  // Helper. Establish player limits in the screen. Check for collision with enemies. 
+  // Helper. Establish player limits in the screen. Check for collision with
+  // enemies.
   auto checkPlayerCollision = [&](std::shared_ptr<Entity> player, const std::string &enemyType)
   {
     float playerR = player->cCollision->radius;
@@ -344,6 +345,8 @@ void Game::sRender()
 {
   // TODO: change the code below to draw ALL of the entities
   // sample drawing of the player Entity that we have created
+
+  // Change screen background color when specialWeapon is alive.
   auto sW = m_entities.getEntities("specialWeapon");
   sW.empty() ? m_window.clear(sf::Color(0, 0, 0, 255)) : m_window.clear(sf::Color(200, 200, 200, 255));
 
@@ -432,24 +435,23 @@ void Game::sUserInput()
       }
     }
 
-    if (!ImGui::GetIO().WantCaptureMouse) // Separates the ImGui window from the
-                                          // input of the game
+    // Separates the ImGui window from the input of the game
+    if (!ImGui::GetIO().WantCaptureMouse)
     {
       if (event.type == sf::Event::MouseButtonPressed)
       {
         if (event.mouseButton.button == sf::Mouse::Left)
         {
-          if (!m_paused)
-          {
-            spawnBullet(m_player, Vec2(event.mouseButton.x, event.mouseButton.y));
-          }
+          // Condition needed, or else bullet is show when game paused and left
+          // mouseButton clicked in the ImGui window.
+          if (!m_paused) spawnBullet(m_player, Vec2(event.mouseButton.x, event.mouseButton.y));
         }
 
         if (event.mouseButton.button == sf::Mouse::Right)
         {
-          if (m_entities.getEntities("specialWeapon").empty()) // If the vector as a specialWeapon, I can not spawn
-                                                               // a new one.
-            spawnSpecialWeapon(Vec2(event.mouseButton.x, event.mouseButton.y));
+          // If the vector as a specialWeapon, I can not spawn a new one. One at
+          // a time.
+          if (m_entities.getEntities("specialWeapon").empty()) spawnSpecialWeapon(Vec2(event.mouseButton.x, event.mouseButton.y));
         }
       }
     }
@@ -566,8 +568,9 @@ void Game::sGUI()
   ImGui::Checkbox("Toggle UserInput", &m_toggleUserInput);
   ImGui::Checkbox("Toggle Lifespan", &m_toggleLifespan);
 
-  ImGui::DragFloat("drag float", &eSI);
   m_enemyConfig.SI = eSI;
+  ImGui::DragFloat("Enemy Spawn Interval", &eSI);
+
   ImGui::BeginChild("Scrolling");
   ImGui::BeginTable("table1", 4);
   ImGui::TextColored(ImVec4(1, 1, 0, 1), "Important Stuff");
