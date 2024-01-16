@@ -2,13 +2,13 @@
 (check the "assignment_starts branch")
 
 ## Description
-Following David Churchill's c++ game dev course in youtube. In the main branch you will see a skeleton of the assignment. In the "assignment_starts" branch you will see my solution to the task.
+Following David Churchill's c++ game dev course on YouTube. In the main branch you will see a skeleton of the assignment. In the "assignment_starts" branch you will see my solution to the task. Consider just starring the repo if I save you a lot of typing from the lectures videos. Thanks!
 
 ## Prerequisites
 To compile and run the game, you need to have the following dependencies installed. If you have problems making SFML and ImGui, take a look at
 the assignment_starts branch:
 
-- C++ compiler (e.g., GCC or Clang)
+- C++ compiler (I am usign GCC)
 - SFML library
 - IMGUI library
 
@@ -44,8 +44,6 @@ the assignment_starts branch:
    make run
    ```
 
-4. Use a, s, d, w keys to control the player figure and the mouse to shoot bullets. Try the right click to make a gravity trap.
-
 ## Cleaning Up
 
 To remove the compiled binaries and object files, you can use the following command:
@@ -53,7 +51,6 @@ To remove the compiled binaries and object files, you can use the following comm
    bash
    make clean
    ```
-
 
 ## Contributing
 
