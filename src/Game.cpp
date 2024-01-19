@@ -68,9 +68,10 @@ void Game::run()
     sGUI();
     sRender();
   }
+  m_window.close();
 };
 
-void Game::setPaused() { m_paused = !m_paused; }
+void Game::setPaused(bool pause) { m_paused = !m_paused; }
 
 void Game::spawnPlayer()
 {
@@ -389,27 +390,13 @@ void Game::sUserInput()
     {
       switch (event.key.code)
       {
-      case sf::Keyboard::P: // Pause the game
-        setPaused();
-        break;
-      case sf::Keyboard::Q: // Close window and stop game
-        m_window.close();
-        m_running = false;
-        break;
-      case sf::Keyboard::W:
-        m_player->cInput->up = true;
-        break;
-      case sf::Keyboard::S:
-        m_player->cInput->down = true;
-        break;
-      case sf::Keyboard::A:
-        m_player->cInput->left = true;
-        break;
-      case sf::Keyboard::D:
-        m_player->cInput->right = true;
-        break;
-      default:
-        break;
+      case sf::Keyboard::W: m_player->cInput->up = true; break;
+      case sf::Keyboard::S: m_player->cInput->down = true; break;
+      case sf::Keyboard::A: m_player->cInput->left = true; break;
+      case sf::Keyboard::D: m_player->cInput->right = true; break;
+      case sf::Keyboard::P: setPaused(!m_paused); break; // Pause game
+      case sf::Keyboard::Escape: m_running = false; break; // Stop the game
+      default: break;
       }
     }
 
@@ -418,20 +405,11 @@ void Game::sUserInput()
     {
       switch (event.key.code)
       {
-      case sf::Keyboard::W:
-        m_player->cInput->up = false;
-        break;
-      case sf::Keyboard::S:
-        m_player->cInput->down = false;
-        break;
-      case sf::Keyboard::A:
-        m_player->cInput->left = false;
-        break;
-      case sf::Keyboard::D:
-        m_player->cInput->right = false;
-        break;
-      default:
-        break;
+      case sf::Keyboard::W: m_player->cInput->up = false; break;
+      case sf::Keyboard::S: m_player->cInput->down = false; break;
+      case sf::Keyboard::A: m_player->cInput->left = false; break;
+      case sf::Keyboard::D: m_player->cInput->right = false; break;
+      default: break;
       }
     }
 

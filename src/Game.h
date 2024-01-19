@@ -76,7 +76,7 @@ class Game
   std::shared_ptr<Entity> m_player;
 
   void init(const std::string &config); // initialize the GameState with a config file path
-  void setPaused();                     // pause the game
+  void setPaused(bool pause);                     // pause the game
 
   void sMovement();     // System: Entity position / movement update
   void sUserInput();    // System: User input

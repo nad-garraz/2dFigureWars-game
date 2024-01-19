@@ -1,14 +1,10 @@
 # Geometry Wars Game
 
-This repository contains the implementation of a kind of geometry wars in C++ using SFML library and IMGUI interface. The game is inspired by David's Churchill assignment on YouTube [here](https://www.youtube.com/watch?v=DLlGY1Po6Bk&list=PL_xRyXins84_Jf-aCh7chj47HR4oZLPwK&index=8).
-The idea is to learn some c++ game development. From the video Description:
-"_This is a course for students interested in learning the fundamentals of game programming and game engine architecture. Topics include an introduction to: vector math for games, rendering, animation, and artificial intelligence, collision detection, game physics, and user-interfaces. Students will be writing fully functional games using an ECS (Entities, Components, Systems) architecture, using the C++ programming language and the SFML graphics library._"
+This repository contains the implementation of a kind of geometry wars in C++ using SFML library and IMGUI interface. The game is inspired by David's Churchill assignment on YouTube.
 
 ## Game Description
 
 Geometry Wars is a 2D shooter game where the player controls a geometric figure that shoots bullets to destroy other polygons spawning on the screen. The objective is to survive as long as possible by avoiding collisions with the enemy polygons and destroying them.
-
-##
 
 In the *main* branch you will have nothing implemented, is the skeleton (more or less) of the assignment. In the *assignment_starts* branch you will see my attempt to make a game :) . Feel free to check it out and give me some better coding practices tips! Or maybe give the repo a star if you are just lazy to make the skeleton by yourself :D. 
 
