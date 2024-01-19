@@ -2,7 +2,7 @@
 (check the "assignment_starts branch")
 
 ## Description
-Following David Churchill's c++ game dev course on YouTube. In the main branch you will see a skeleton of the assignment. In the "assignment_starts" branch you will see my solution to the task. Consider just starring the repo if I save you a lot of typing from the lectures videos. Thanks!
+Following David Churchill's c++ game dev course on YouTube. In the main branch you will see a skeleton of the assignment. In the "assignment_starts" branch you will see my solution to the task. Thanks!
 
 ## Prerequisites
 To compile and run the game, you need to have the following dependencies installed. If you have problems making SFML and ImGui, take a look at
@@ -58,7 +58,7 @@ Contributions to this project are welcome. If you find any issues or have sugges
 
 ## Acknowledgments
 
-- David's Churchill tutorial on YouTube for the inspiration and guidance in building this game.
+- David's Churchill tutorial on YouTube.
 - SFML library for providing the necessary tools for game development.
 - IMGUI library for the user interface implementation.
 
